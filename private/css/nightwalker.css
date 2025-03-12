@@ -369,6 +369,9 @@ textarea {
   background: var(--color-Grey) !important;
   color: var(--color-White) !important;
   border: 0px;
+}
+
+textarea:not(#urls) {
   white-space: nowrap;
 }
 
