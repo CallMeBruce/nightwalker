@@ -369,10 +369,11 @@ textarea {
   background: var(--color-Grey) !important;
   color: var(--color-White) !important;
   border: 0px;
+  white-space: nowrap;
 }
 
-textarea:not(#urls) {
-  white-space: nowrap;
+textarea#urls {
+  white-space: pre;
 }
 
 input::placeholder {
