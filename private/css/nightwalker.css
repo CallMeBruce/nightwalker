@@ -372,6 +372,10 @@ textarea {
   white-space: nowrap;
 }
 
+textarea#urls {
+  white-space: pre;
+}
+
 input::placeholder {
   color: var(--color-White) !important;
 }
