@@ -1,11 +1,11 @@
 <div class="toolbarTabs">
     <ul id="aboutTabs" class="tab-menu">
-        <li id="aboutAboutLink" class="selected"><a>About</a></li>
-        <li id="aboutAuthorLink"><a>Authors</a></li>
-        <li id="aboutSpecialThanksLink"><a>Special Thanks</a></li>
-        <li id="aboutTranslatorsLink"><a>Translators</a></li>
-        <li id="aboutLicenseLink"><a>License</a></li>
-        <li id="aboutSoftwareUsedLink"><a>Software Used</a></li>
+        <li id="aboutAboutLink" class="selected"><a>QBT_TR(About)QBT_TR[CONTEXT=AboutDialog]</a></li>
+        <li id="aboutAuthorLink"><a>QBT_TR(Authors)QBT_TR[CONTEXT=AboutDialog]</a></li>
+        <li id="aboutSpecialThanksLink"><a>QBT_TR(Special Thanks)QBT_TR[CONTEXT=AboutDialog]</a></li>
+        <li id="aboutTranslatorsLink"><a>QBT_TR(Translators)QBT_TR[CONTEXT=AboutDialog]</a></li>
+        <li id="aboutLicenseLink"><a>QBT_TR(License)QBT_TR[CONTEXT=AboutDialog]</a></li>
+        <li id="aboutSoftwareUsedLink"><a>QBT_TR(Software Used)QBT_TR[CONTEXT=AboutDialog]</a></li>
     </ul>
     <div class="clear"></div>
 </div>
@@ -13,37 +13,31 @@
 <script>
     "use strict";
 
-    (function() {
+    (() => {
         MochaUI.initializeTabs("aboutTabs");
 
-        $("aboutAboutLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutAboutContent").removeClass("invisible");
-        });
+        const showContent = (element) => {
+            for (const content of document.querySelectorAll(".aboutTabContent"))
+                content.classList.toggle("invisible", (content !== element));
+        };
 
-        $("aboutAuthorLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutAuthorContent").removeClass("invisible");
+        document.getElementById("aboutAboutLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutAboutContent"));
         });
-
-        $("aboutSpecialThanksLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutSpecialThanksContent").removeClass("invisible");
+        document.getElementById("aboutAuthorLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutAuthorContent"));
         });
-
-        $("aboutTranslatorsLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutTranslatorsContent").removeClass("invisible");
+        document.getElementById("aboutSpecialThanksLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutSpecialThanksContent"));
         });
-
-        $("aboutLicenseLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutLicenseContent").removeClass("invisible");
+        document.getElementById("aboutTranslatorsLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutTranslatorsContent"));
         });
-
-        $("aboutSoftwareUsedLink").addEvent("click", () => {
-            $$(".aboutTabContent").addClass("invisible");
-            $("aboutSoftwareUsedContent").removeClass("invisible");
+        document.getElementById("aboutLicenseLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutLicenseContent"));
+        });
+        document.getElementById("aboutSoftwareUsedLink").addEventListener("click", (event) => {
+            showContent(document.getElementById("aboutSoftwareUsedContent"));
         });
     })();
 </script>

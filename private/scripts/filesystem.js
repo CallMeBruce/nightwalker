@@ -1,6 +1,6 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2019  Thomas Piccirello <thomas.piccirello@gmail.com>
+ * Copyright (C) 2019  Thomas Piccirello <thomas@piccirello.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -30,11 +30,9 @@
 
 // This file is the JavaScript implementation of base/utils/fs.cpp
 
-if (window.qBittorrent === undefined)
-    window.qBittorrent = {};
-
-window.qBittorrent.Filesystem = (function() {
-    const exports = function() {
+window.qBittorrent ??= {};
+window.qBittorrent.Filesystem ??= (() => {
+    const exports = () => {
         return {
             PathSeparator: PathSeparator,
             fileExtension: fileExtension,
@@ -48,21 +46,21 @@ window.qBittorrent.Filesystem = (function() {
     /**
      * Returns the file extension part of a file name.
      */
-    const fileExtension = function(filename) {
+    const fileExtension = (filename) => {
         const pointIndex = filename.lastIndexOf(".");
         if (pointIndex === -1)
             return "";
         return filename.substring(pointIndex + 1);
     };
 
-    const fileName = function(filepath) {
+    const fileName = (filepath) => {
         const slashIndex = filepath.lastIndexOf(PathSeparator);
         if (slashIndex === -1)
             return filepath;
         return filepath.substring(slashIndex + 1);
     };
 
-    const folderName = function(filepath) {
+    const folderName = (filepath) => {
         const slashIndex = filepath.lastIndexOf(PathSeparator);
         if (slashIndex === -1)
             return "";
@@ -71,5 +69,4 @@ window.qBittorrent.Filesystem = (function() {
 
     return exports();
 })();
-
 Object.freeze(window.qBittorrent.Filesystem);

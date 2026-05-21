@@ -2,62 +2,60 @@
 <html lang="${LANG}" class="dark">
 
 <head>
-    <meta charset="UTF-8" />
-    <title>Rename</title>
-    <link rel="stylesheet" href="css/style.css?v=${CACHEID}" type="text/css" />
-    <script src="scripts/lib/MooTools-Core-1.6.0-compat-compressed.js"></script>
-    <script src="scripts/lib/MooTools-More-1.6.0-compat-compressed.js"></script>
-    <script src="scripts/localpreferences.js?v=${CACHEID}"></script>
-    <script src="scripts/color-scheme.js?v=${CACHEID}"></script>
-    <script src="scripts/misc.js?locale=${LANG}&v=${CACHEID}"></script>
+    <meta charset="UTF-8">
+    <title>QBT_TR(Rename)QBT_TR[CONTEXT=TransferListWidget]</title>
+    <link rel="stylesheet" href="css/style.css?v=${CACHEID}" type="text/css">
+    <link rel="stylesheet" type="text/css" href="css/nightwalker.css?v=${CACHEID}" />
+    <script defer src="scripts/localpreferences.js?v=${CACHEID}"></script>
+    <script defer src="scripts/color-scheme.js?v=${CACHEID}"></script>
     <script>
         "use strict";
 
-        new Keyboard({
-            defaultEventType: "keydown",
-            events: {
-                "Enter": function(event) {
-                    $("renameButton").click();
-                    event.preventDefault();
-                },
-                "Escape": function(event) {
-                    window.parent.qBittorrent.Client.closeWindows();
-                    event.preventDefault();
-                },
-                "Esc": function(event) {
-                    window.parent.qBittorrent.Client.closeWindows();
-                    event.preventDefault();
+        window.addEventListener("DOMContentLoaded", (event) => {
+            window.addEventListener("keydown", (event) => {
+                switch (event.key) {
+                    case "Enter":
+                        event.preventDefault();
+                        document.getElementById("renameButton").click();
+                        break;
+                    case "Escape":
+                        event.preventDefault();
+                        window.parent.qBittorrent.Client.closeFrameWindow(window);
+                        break;
                 }
-            }
-        }).activate();
+            });
 
-        window.addEvent("domready", () => {
-            const name = new URI().getData("name");
+            const searchParams = new URLSearchParams(window.location.search);
+            const name = searchParams.get("name");
             // set text field to current value
-            if (name)
-                $("rename").value = name;
+            if (name !== null)
+                document.getElementById("rename").value = name;
 
-            $("rename").focus();
-            $("renameButton").addEvent("click", (e) => {
-                new Event(e).stop();
+            document.getElementById("rename").focus();
+            document.getElementById("renameButton").addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+
                 // check field
-                const name = $("rename").value.trim();
+                const name = document.getElementById("rename").value.trim();
                 if ((name === null) || (name === ""))
-                    return false;
+                    return;
 
-                const hash = new URI().getData("hash");
-                if (hash) {
-                    new Request({
-                        url: "api/v2/torrents/rename",
-                        method: "post",
-                        data: {
-                            hash: hash,
-                            name: name
-                        },
-                        onComplete: function() {
-                            window.parent.qBittorrent.Client.closeWindows();
-                        }
-                    }).send();
+                const hash = searchParams.get("hash");
+                if (hash !== null) {
+                    fetch("api/v2/torrents/rename", {
+                            method: "POST",
+                            body: new URLSearchParams({
+                                hash: hash,
+                                name: name
+                            })
+                        })
+                        .then((response) => {
+                            if (!response.ok)
+                                return;
+
+                            window.parent.qBittorrent.Client.closeFrameWindow(window);
+                        });
                 }
             });
         });
@@ -66,10 +64,10 @@
 
 <body>
     <div style="padding: 10px 10px 0px 10px;">
-        <p style="font-weight: bold;">New name:</p>
-        <input type="text" id="rename" style="width: 99%;" />
+        <label for="rename" style="font-weight: bold;">QBT_TR(New name:)QBT_TR[CONTEXT=TransferListWidget]</label>
+        <input type="text" id="rename" style="width: 99%;">
         <div style="text-align: center; padding-top: 10px;">
-            <input type="button" value="Save" id="renameButton" />
+            <input type="button" value="QBT_TR(Save)QBT_TR[CONTEXT=HttpServer]" id="renameButton">
         </div>
     </div>
 </body>

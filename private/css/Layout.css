@@ -1,5 +1,3 @@
-@import url("palette.css");
-
 /*
 
 Core.css for Mocha UI
@@ -7,22 +5,18 @@ Core.css for Mocha UI
 Theme: Default
 
 Copyright:
-	Copyright (c) 2007-2009 Greg Houston, <http://greghoustondesign.com/>.
+    Copyright (c) 2007-2009 Greg Houston, <http://greghoustondesign.com/>.
 
 License:
-	MIT-style license.
+    MIT-style license.
 
 Required by:
-	Layout.js
+    Layout.js
 
 */
 
 /* Layout
 ---------------------------------------------------------------- */
-
-body {
-    margin: 0; /* Required */
-}
 
 #desktop {
     cursor: default; /* Fix for issue in IE7. IE7 wants to use the I-bar text cursor */
@@ -31,41 +25,6 @@ body {
     min-width: 400px; /* Helps keep header content from wrapping */
     overflow: hidden;
     position: relative;
-}
-
-#desktopTitlebarWrapper {
-    height: 45px;
-    overflow: hidden;
-    position: relative;
-}
-
-#desktopTitlebar {
-    background: url("../images/logo.gif") no-repeat;
-    background-position: left 0;
-    height: 32px;
-    padding: 7px 8px 6px;
-}
-
-#desktopTitlebar h1.applicationTitle {
-    display: none;
-    font-size: 20px;
-    font-weight: bold;
-    line-height: 25px;
-    margin: 0;
-    padding: 0 5px 0 0;
-}
-
-#desktopTitlebar h2.tagline {
-    font-family: Verdana, Arial, Helvetica, sans-serif;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 7px 0 0;
-    text-align: center;
-    text-transform: uppercase;
-}
-
-#desktopTitlebar h2.tagline .taglineEm {
-    font-weight: bold;
 }
 
 #topNav {
@@ -90,15 +49,14 @@ body {
 
 #desktopNavbar {
     background-color: var(--color-background-default);
-    margin: 0 0px;
     overflow: hidden; /* Remove this line if you want the menu to be backward compatible with Firefox 2 */
 }
 
 #desktopNavbar ul {
     font-size: 12px;
-    list-style: none;
     margin: 0;
     padding: 0;
+    user-select: none;
 }
 
 #desktopNavbar > ul > li {
@@ -120,11 +78,21 @@ body {
     color: var(--color-text-white);
 }
 
-#desktopNavbar ul li a.arrow-right,
-#desktopNavbar ul li a:hover.arrow-right {
-    background-image: url("../images/arrow-right.gif");
-    background-position: right 7px;
-    background-repeat: no-repeat;
+#desktopNavbar a:hover img {
+    filter: var(--color-icon-hover);
+}
+
+#desktopNavbar ul li a.arrow-right::after,
+#desktopNavbar ul li a:hover.arrow-right::after {
+    border: solid currentcolor;
+    border-width: 0 2px 2px 0;
+    content: "";
+    display: inline-block;
+    padding: 2px;
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: rotate(-45deg) translateY(-50%);
 }
 
 #desktopNavbar li ul {
@@ -158,15 +126,17 @@ body {
     width: 5px;
 }
 
-#desktopNavbar li ul li a {
+#desktopNavbar li ul li a,
+#desktopNavbar li ul li div.anchor {
     color: var(--color-text-default);
     font-weight: normal;
-    min-width: 120px;
-    padding: 4px 10px 4px 25px;
+    min-width: 155px;
+    padding: 4px 10px 4px 23px;
     position: relative;
 }
 
-#desktopNavbar li ul li a:hover {
+#desktopNavbar li ul li a:hover,
+#desktopNavbar li ul li div.anchor:hover {
     background-color: var(--color-background-hover);
     color: var(--color-text-white);
 }
@@ -197,14 +167,17 @@ li.divider {
     border-top: 1px solid var(--color-border-default);
     overflow: hidden; /* This can be set to hidden or auto */
     position: relative;
-    /*height: 100%;*/
+}
+
+#propertiesPanel_header {
+    height: 28px;
 }
 
 /* Footer */
 
 #desktopFooterWrapper {
     bottom: 0;
-    height: 30px;
+    height: 28px;
     left: 0;
     overflow: hidden;
     position: absolute;
@@ -214,8 +187,8 @@ li.divider {
 #desktopFooter {
     font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 11px;
-    height: 24px;
-    padding: 6px 8px 0;
+    height: 28px;
+    padding: 2px;
 }
 
 /* Panel Layout
@@ -246,6 +219,7 @@ li.divider {
 }
 
 .pad {
+    height: 100%;
     padding: 8px;
 }
 
@@ -263,7 +237,6 @@ li.divider {
     display: inline-block;
     font-size: 12px;
     height: 22px;
-    margin: 0;
     overflow: hidden;
     padding: 3px 8px 0;
 }
@@ -296,24 +269,22 @@ li.divider {
 }
 
 .horizontalHandle .handleIcon {
-    background: url("../images/handle-icon-horizontal.gif") center center
+    background: url("../images/handle-icon-horizontal.svg") center center
         no-repeat;
-    font-size: 1px;
-    height: 4px;
-    line-height: 1px;
+    height: 6px;
     margin: 0 auto;
     overflow: hidden;
 }
 
 .columnHandle {
-    background: url("../images/handle-icon.gif") center center no-repeat;
+    background: url("../images/handle-icon.svg") center center no-repeat;
     border: 1px solid var(--color-border-default);
     border-bottom: 0;
     border-top: 0;
     float: left;
     min-height: 10px;
     overflow: hidden;
-    width: 4px;
+    width: 8px;
 }
 
 /* Toolboxes */
@@ -321,7 +292,7 @@ li.divider {
 .toolbox {
     float: right;
     height: 24px;
-    margin-top: 3px;
+    margin-top: 1px;
     overflow: hidden;
     padding: 0 5px;
     text-align: right;
@@ -329,7 +300,7 @@ li.divider {
 
 /* Have to specify div here for IE6's sake */
 div.toolbox.divider {
-    background: url("../images/toolbox-divider.gif") repeat-y;
+    background: url("../images/toolbox-divider.svg") repeat-y;
     padding-left: 8px;
 }
 
@@ -361,15 +332,8 @@ div.toolbox.divider {
     border-radius: 3px;
 }
 
-#spinnerWrapper {
-    background: url("../images/spinner-placeholder.gif") no-repeat;
-    height: 16px;
-    margin: 4px 5px 0;
-    width: 16px;
-}
-
 #spinner {
-    background: url("../images/spinner.gif") no-repeat;
+    background: url("../images/spinner.svg") no-repeat;
     display: none;
     height: 16px;
     width: 16px;

@@ -1,5 +1,6 @@
-### Updated to support qBittorrent v5+
-**Hack to "fix" theme after qBittorrent WebUI stopped support for translation in v4.5. NOTE: Not optimised, just a splice of the current WebUI 5.0.2 (with translation strings removed) and the nightwalker styles**
+### Updated to support qBittorrent v5.2
+**NOTE: This is a splice of the current WebUI 5.2 and the nightwalker styles, with some merging of the two**
+For older 5.1 versions of qBittorrent use [5.1.4 Branch][514branch]
 
 # A Dark but not black qBittorrent WebUI 
 **_A darker theme for qBittorrent WebUI_ (made with the help of the Walkerservers community)**
@@ -52,6 +53,7 @@ Modify your nginx config and remove the lines that introduced the external css, 
 * qBittorrent for the base files
 
 [preview]: preview.png
-[qbittorrentsource]: https://github.com/qbittorrent/qBittorrent/tree/master/src/webui/www1\
+[qbittorrentsource]: https://github.com/qbittorrent/qBittorrent/tree/master/src/webui/www\
 [theme.park]: https://github.com/gilbN/theme.park/wiki/qBittorrent
 [nightwarlkersource]: https://github.com/repslet/nightwalker.git
+[514branch]: https://github.com/CallMeBruce/nightwalker/tree/qbittorrent-v5.1.4

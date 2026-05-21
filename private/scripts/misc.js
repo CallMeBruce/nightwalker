@@ -28,139 +28,194 @@
 
 "use strict";
 
-if (window.qBittorrent === undefined)
-    window.qBittorrent = {};
-
-window.qBittorrent.Misc = (function() {
-    const exports = function() {
+window.qBittorrent ??= {};
+window.qBittorrent.Misc ??= (() => {
+    const exports = () => {
         return {
+            getHost: getHost,
+            createDebounceHandler: createDebounceHandler,
+            filterInPlace: filterInPlace,
             friendlyUnit: friendlyUnit,
             friendlyDuration: friendlyDuration,
             friendlyPercentage: friendlyPercentage,
-            friendlyFloat: friendlyFloat,
             parseHtmlLinks: parseHtmlLinks,
             parseVersion: parseVersion,
+            compareVersions: compareVersions,
             escapeHtml: escapeHtml,
             naturalSortCollator: naturalSortCollator,
             safeTrim: safeTrim,
             toFixedPointString: toFixedPointString,
             containsAllTerms: containsAllTerms,
             sleep: sleep,
+            DateFormatOptions: DateFormatOptions,
+            downloadFile: downloadFile,
+            downloadFileStream: downloadFileStream,
+            formatDate: formatDate,
             // variables
             FILTER_INPUT_DELAY: 400,
             MAX_ETA: 8640000
         };
     };
 
+    // getHost emulate the GUI version `QString getHost(const QString &url)`
+    const getHost = (url) => {
+        // We want the hostname.
+        // If failed to parse the domain, original input should be returned
+
+        if (!/^(?:https?|udp):/i.test(url))
+            return url;
+
+        try {
+            // hack: URL can not get hostname from udp protocol
+            const parsedUrl = new URL(url.replace(/^udp:/i, "https:"));
+            // host: "example.com:8443"
+            // hostname: "example.com"
+            const host = parsedUrl.hostname;
+            if (!host)
+                return url;
+
+            return host;
+        }
+        catch (error) {
+            return url;
+        }
+    };
+
+    const createDebounceHandler = (delay, func) => {
+        let timer = -1;
+        return (...params) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                func(...params);
+
+                timer = -1;
+            }, delay);
+        };
+    };
+
+    const filterInPlace = (array, predicate) => {
+        let j = 0;
+        for (let i = 0; i < array.length; ++i) {
+            if (predicate(array[i])) {
+                if (i > j)
+                    array[j] = array[i];
+                ++j;
+            }
+        }
+        array.splice(j, (array.length - j));
+    };
+
     /*
      * JS counterpart of the function in src/misc.cpp
      */
-    const friendlyUnit = function(value, isSpeed) {
+    const friendlyUnit = (value, isSpeed) => {
+        if ((value === undefined) || (value === null) || Number.isNaN(value) || (value < 0))
+            return "QBT_TR(Unknown)QBT_TR[CONTEXT=misc]";
+
         const units = [
-            "B",
-            "KiB",
-            "MiB",
-            "GiB",
-            "TiB",
-            "PiB",
-            "EiB"
+            "QBT_TR(B)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(KiB)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(MiB)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(GiB)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(TiB)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(PiB)QBT_TR[CONTEXT=misc]",
+            "QBT_TR(EiB)QBT_TR[CONTEXT=misc]"
         ];
 
-        if ((value === undefined) || (value === null) || (value < 0))
-            return "Unknown";
-
-        let i = 0;
-        while ((value >= 1024.0) && (i < 6)) {
-            value /= 1024.0;
-            ++i;
-        }
-
-        function friendlyUnitPrecision(sizeUnit) {
+        const friendlyUnitPrecision = (sizeUnit) => {
             if (sizeUnit <= 2) // KiB, MiB
                 return 1;
             else if (sizeUnit === 3) // GiB
                 return 2;
             else // TiB, PiB, EiB
                 return 3;
+        };
+
+        let i = 0;
+        while ((value >= 1024) && (i < 6)) {
+            value /= 1024;
+            ++i;
         }
 
         let ret;
         if (i === 0) {
-            ret = value + " " + units[i];
+            ret = `${value} ${units[i]}`;
         }
         else {
             const precision = friendlyUnitPrecision(i);
-            const offset = Math.pow(10, precision);
             // Don't round up
-            ret = (Math.floor(offset * value) / offset).toFixed(precision) + " " + units[i];
+            ret = `${toFixedPointString(value, precision)} ${units[i]}`;
         }
 
         if (isSpeed)
-            ret += "/s";
+            ret += "QBT_TR(/s)QBT_TR[CONTEXT=misc]";
         return ret;
     };
 
     /*
      * JS counterpart of the function in src/misc.cpp
      */
-    const friendlyDuration = function(seconds, maxCap = -1) {
+    const friendlyDuration = (seconds, maxCap = -1) => {
         if ((seconds < 0) || ((seconds >= maxCap) && (maxCap >= 0)))
             return "∞";
         if (seconds === 0)
             return "0";
         if (seconds < 60)
-            return "< 1m";
+            return "QBT_TR(< 1m)QBT_TR[CONTEXT=misc]";
         let minutes = seconds / 60;
         if (minutes < 60)
-            return "%1m".replace("%1", Math.floor(minutes));
+            return "QBT_TR(%1m)QBT_TR[CONTEXT=misc]".replace("%1", Math.floor(minutes));
         let hours = minutes / 60;
         minutes %= 60;
         if (hours < 24)
-            return "%1h %2m".replace("%1", Math.floor(hours)).replace("%2", Math.floor(minutes));
+            return "QBT_TR(%1h %2m)QBT_TR[CONTEXT=misc]".replace("%1", Math.floor(hours)).replace("%2", Math.floor(minutes));
         let days = hours / 24;
         hours %= 24;
         if (days < 365)
-            return "%1d %2h".replace("%1", Math.floor(days)).replace("%2", Math.floor(hours));
+            return "QBT_TR(%1d %2h)QBT_TR[CONTEXT=misc]".replace("%1", Math.floor(days)).replace("%2", Math.floor(hours));
         const years = days / 365;
         days %= 365;
-        return "%1y %2d".replace("%1", Math.floor(years)).replace("%2", Math.floor(days));
+        return "QBT_TR(%1y %2d)QBT_TR[CONTEXT=misc]".replace("%1", Math.floor(years)).replace("%2", Math.floor(days));
     };
 
-    const friendlyPercentage = function(value) {
-        let percentage = (value * 100).round(1);
-        if (isNaN(percentage) || (percentage < 0))
+    const friendlyPercentage = (value) => {
+        let percentage = value * 100;
+        if (Number.isNaN(percentage) || (percentage < 0))
             percentage = 0;
         if (percentage > 100)
             percentage = 100;
-        return percentage.toFixed(1) + "%";
-    };
-
-    const friendlyFloat = function(value, precision) {
-        return parseFloat(value).toFixed(precision);
+        return `${toFixedPointString(percentage, 1)}%`;
     };
 
     /*
      * JS counterpart of the function in src/misc.cpp
      */
-    const parseHtmlLinks = function(text) {
+    const parseHtmlLinks = (text) => {
         const exp = /(\b(https?|ftp|file):\/\/[-\w+&@#/%?=~|!:,.;]*[-\w+&@#/%=~|])/gi;
         return text.replace(exp, "<a target='_blank' rel='noopener noreferrer' href='$1'>$1</a>");
     };
 
-    const parseVersion = function(versionString) {
+    /**
+     * Parse a string into a Version Record.
+     * It is generally recommended to use `compareVersions()` instead.
+     *
+     * @param {string} versionString
+     * @returns {Record<string, any>}
+     */
+    const parseVersion = (versionString) => {
         const failure = {
             valid: false
         };
 
-        if (typeof versionString !== "string")
+        if ((typeof versionString !== "string") || (versionString.length === 0))
             return failure;
 
         const tryToNumber = (str) => {
             const num = Number(str);
-            return (isNaN(num) ? str : num);
+            return (Number.isNaN(num) ? str : num);
         };
 
-        const ver = versionString.split(".", 4).map(val => tryToNumber(val));
+        const ver = versionString.split(".", 4).map(tryToNumber);
         return {
             valid: true,
             major: ver[0],
@@ -170,18 +225,63 @@ window.qBittorrent.Misc = (function() {
         };
     };
 
-    const escapeHtml = function(str) {
-        const div = document.createElement("div");
-        div.appendChild(document.createTextNode(str));
-        const escapedString = div.innerHTML;
-        div.remove();
-        return escapedString;
+    /**
+     * @param {string | Record<string, any>} left - A version string or the return type of `parseVersion()`
+     * @param {string | Record<string, any>} right - A version string or the return type of `parseVersion()`
+     * @returns {number} `< 0` if `left` is less than `right`. `=== 0` if equal. `> 0` if `left` is greater than `right`.
+     */
+    const compareVersions = (left, right) => {
+        if (typeof left === "string")
+            left = parseVersion(left);
+        if (typeof right === "string")
+            right = parseVersion(right);
+
+        if (!left.valid)
+            return right.valid ? 1 : 0;
+        if (!right.valid)
+            return -1;
+
+        const cmp = (left, right) => {
+            // possible types for `left` and `right`: undefined, number, string (where length === 1)
+
+            if (left === undefined)
+                left = 0;
+            if (right === undefined)
+                right = 0;
+
+            const isNumber = (val) => ((typeof val === "number") && !Number.isNaN(val));
+            return (isNumber(left) && isNumber(right))
+                ? (left - right)
+                : naturalSortCollator.compare(left, right);
+        };
+
+        const resultMajor = cmp(left.major, right.major);
+        if (resultMajor !== 0)
+            return resultMajor;
+
+        const resultMinor = cmp(left.minor, right.minor);
+        if (resultMinor !== 0)
+            return resultMinor;
+
+        const resultFix = cmp(left.fix, right.fix);
+        if (resultFix !== 0)
+            return resultFix;
+
+        return cmp(left.patch, right.patch);
     };
+
+    const escapeHtml = (() => {
+        const div = document.createElement("div");
+        return (str) => {
+            div.textContent = str;
+            return div.innerHTML;
+        };
+    })();
 
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator/Collator#parameters
     const naturalSortCollator = new Intl.Collator(undefined, { numeric: true, usage: "sort" });
 
-    const safeTrim = function(value) {
+    const safeTrim = (value) => {
         try {
             return value.trim();
         }
@@ -192,23 +292,37 @@ window.qBittorrent.Misc = (function() {
         }
     };
 
-    const toFixedPointString = function(number, digits) {
-        // Do not round up number
-        const power = Math.pow(10, digits);
-        return (Math.floor(power * number) / power).toFixed(digits);
+    const toFixedPointString = (number, digits) => {
+        if (Number.isNaN(number))
+            return number.toString();
+
+        const sign = (number < 0) ? "-" : "";
+        // Do not round up `number`
+        // Small floating point numbers are imprecise, thus process as a String
+        const tmp = Math.trunc(`${Math.abs(number)}e${digits}`).toString();
+        if (digits <= 0) {
+            return (tmp === "0") ? tmp : `${sign}${tmp}`;
+        }
+        else if (digits < tmp.length) {
+            const idx = tmp.length - digits;
+            return `${sign}${tmp.slice(0, idx)}.${tmp.slice(idx)}`;
+        }
+        else {
+            const zeros = "0".repeat(digits - tmp.length);
+            return `${sign}0.${zeros}${tmp}`;
+        }
     };
 
     /**
-     *
      * @param {String} text the text to search
      * @param {Array<String>} terms terms to search for within the text
      * @returns {Boolean} true if all terms match the text, false otherwise
      */
-    const containsAllTerms = function(text, terms) {
+    const containsAllTerms = (text, terms) => {
         const textToSearch = text.toLowerCase();
         return terms.every((term) => {
-            const isTermRequired = (term[0] === "+");
-            const isTermExcluded = (term[0] === "-");
+            const isTermRequired = term.startsWith("+");
+            const isTermExcluded = term.startsWith("-");
             if (isTermRequired || isTermExcluded) {
                 // ignore lonely +/-
                 if (term.length === 1)
@@ -217,7 +331,7 @@ window.qBittorrent.Misc = (function() {
                 term = term.substring(1);
             }
 
-            const textContainsTerm = (textToSearch.indexOf(term) !== -1);
+            const textContainsTerm = textToSearch.includes(term);
             return isTermExcluded ? !textContainsTerm : textContainsTerm;
         });
     };
@@ -228,7 +342,172 @@ window.qBittorrent.Misc = (function() {
         });
     };
 
+    const downloadFile = async (url, defaultFileName, errorMessage = "QBT_TR(Unable to download file)QBT_TR[CONTEXT=HttpServer]") => {
+        try {
+            const response = await fetch(url, { method: "GET" });
+            if (!response.ok) {
+                alert(errorMessage);
+                return;
+            }
+
+            const blob = await response.blob();
+            const fileNamePrefix = "attachment; filename=";
+            const fileNameHeader = response.headers.get("content-disposition");
+            let fileName = defaultFileName;
+            if (fileNameHeader.startsWith(fileNamePrefix)) {
+                fileName = fileNameHeader.substring(fileNamePrefix.length);
+                if (fileName.startsWith("\"") && fileName.endsWith("\""))
+                    fileName = fileName.slice(1, -1);
+            }
+
+            const link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            link.click();
+            link.remove();
+        }
+        catch (error) {
+            alert(errorMessage);
+        }
+    };
+
+    const downloadFileStream = async (url, errorMessage = "QBT_TR(Unable to download file)QBT_TR[CONTEXT=HttpServer]") => {
+        try {
+            // Pre-flight HEAD request to check for errors before triggering download
+            // This avoids navigating to an error page on failure
+            const response = await fetch(url, { method: "HEAD" });
+            if (!response.ok) {
+                alert(errorMessage);
+                return;
+            }
+
+            // Trigger native browser download
+            const link = document.createElement("a");
+            link.href = url;
+            link.click();
+        }
+        catch (error) {
+            alert(errorMessage);
+        }
+    };
+
+    /**
+     * @param {Date} date
+     * @param {string} format
+     * @returns {string}
+     */
+    const formatDate = (date, format = window.parent.qBittorrent.ClientData.get("date_format")) => {
+        if ((format === "default") || !Object.hasOwn(DateFormatOptions, format))
+            return date.toLocaleString();
+
+        const { locale, options } = DateFormatOptions[format];
+        const formatter = new Intl.DateTimeFormat(locale, options);
+        const formatted = formatter.format(date).replace(" at ", ", ");
+        return format.includes(".") ? formatted.replaceAll("/", ".") : formatted;
+    };
+
+    /**
+     * @type Record<string, {locale: string, options: {}}>
+     */
+    const DateFormatOptions = Object.freeze({
+        "MM/dd/yyyy, h:mm:ss AM/PM": {
+            locale: "en-US",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            }
+        },
+        "MM/dd/yyyy, HH:mm:ss": {
+            locale: "en-US",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+        "dd/MM/yyyy, HH:mm:ss": {
+            locale: "en-GB",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+        "yyyy-MM-dd HH:mm:ss": {
+            locale: "sv-SE",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+        "yyyy/MM/dd HH:mm:ss": {
+            locale: "ja-JP",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+        "dd.MM.yyyy, HH:mm:ss": {
+            locale: "en-GB",
+            options: {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+        "MMM dd, yyyy, h:mm:ss AM/PM": {
+            locale: "en-US",
+            options: {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "numeric",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: true
+            }
+        },
+        "dd MMM yyyy, HH:mm:ss": {
+            locale: "en-GB",
+            options: {
+                year: "numeric",
+                month: "short",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }
+        },
+    });
+
     return exports();
 })();
-
 Object.freeze(window.qBittorrent.Misc);

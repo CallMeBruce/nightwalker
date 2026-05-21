@@ -38,505 +38,712 @@
    ----------------------------------------------------------------- */
 "use strict";
 
-const LocalPreferences = new window.qBittorrent.LocalPreferences.LocalPreferencesClass();
-
-let saveWindowSize = function() {};
-let loadWindowWidth = function() {};
-let loadWindowHeight = function() {};
-let showDownloadPage = function() {};
-let globalUploadLimitFN = function() {};
-let uploadLimitFN = function() {};
-let shareRatioFN = function() {};
-let toggleSequentialDownloadFN = function() {};
-let toggleFirstLastPiecePrioFN = function() {};
-let setSuperSeedingFN = function() {};
-let setForceStartFN = function() {};
-let globalDownloadLimitFN = function() {};
-let StatisticsLinkFN = function() {};
-let downloadLimitFN = function() {};
-let deleteFN = function() {};
-let stopFN = function() {};
-let startFN = function() {};
-let autoTorrentManagementFN = function() {};
-let recheckFN = function() {};
-let reannounceFN = function() {};
-let setLocationFN = function() {};
-let renameFN = function() {};
-let renameFilesFN = function() {};
-let torrentNewCategoryFN = function() {};
-let torrentSetCategoryFN = function() {};
-let createCategoryFN = function() {};
-let createSubcategoryFN = function() {};
-let editCategoryFN = function() {};
-let removeCategoryFN = function() {};
-let deleteUnusedCategoriesFN = function() {};
-let startTorrentsByCategoryFN = function() {};
-let stopTorrentsByCategoryFN = function() {};
-let deleteTorrentsByCategoryFN = function() {};
-let torrentAddTagsFN = function() {};
-let torrentSetTagsFN = function() {};
-let torrentRemoveAllTagsFN = function() {};
-let createTagFN = function() {};
-let removeTagFN = function() {};
-let deleteUnusedTagsFN = function() {};
-let startTorrentsByTagFN = function() {};
-let stopTorrentsByTagFN = function() {};
-let deleteTorrentsByTagFN = function() {};
-let startTorrentsByTrackerFN = function() {};
-let stopTorrentsByTrackerFN = function() {};
-let deleteTorrentsByTrackerFN = function() {};
-let copyNameFN = function() {};
-let copyInfohashFN = function(policy) {};
-let copyMagnetLinkFN = function() {};
-let copyIdFN = function() {};
-let copyCommentFN = function() {};
-let setQueuePositionFN = function() {};
-let exportTorrentFN = function() {};
-
-const initializeWindows = function() {
-    saveWindowSize = function(windowId) {
-        const size = $(windowId).getSize();
-        LocalPreferences.set("window_" + windowId + "_width", size.x);
-        LocalPreferences.set("window_" + windowId + "_height", size.y);
+window.qBittorrent ??= {};
+window.qBittorrent.Dialog ??= (() => {
+    const exports = () => {
+        return {
+            baseModalOptions: baseModalOptions,
+            limitWidthToViewport: limitWidthToViewport,
+            limitHeightToViewport: limitHeightToViewport
+        };
     };
 
-    loadWindowWidth = function(windowId, defaultValue) {
-        return LocalPreferences.get("window_" + windowId + "_width", defaultValue);
+    const deepFreeze = (obj) => {
+        // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze#examples
+        // accounts for circular refs
+        const frozen = new WeakSet();
+        const deepFreezeSafe = (obj) => {
+            if (frozen.has(obj))
+                return;
+
+            frozen.add(obj);
+
+            const keys = Reflect.ownKeys(obj);
+            for (const key of keys) {
+                const value = obj[key];
+                if ((value && (typeof value === "object")) || (typeof value === "function"))
+                    deepFreezeSafe(value);
+            }
+            Object.freeze(obj);
+        };
+
+        deepFreezeSafe(obj);
     };
 
-    loadWindowHeight = function(windowId, defaultValue) {
-        return LocalPreferences.get("window_" + windowId + "_height", defaultValue);
+    const limitWidthToViewport = (width) => {
+        return Math.min(width, window.innerWidth - 20);
+    };
+    const limitHeightToViewport = (height) => {
+        return Math.min(height, window.innerHeight - 75);
     };
 
-    function addClickEvent(el, fn) {
-        ["Link", "Button"].each((item) => {
-            if ($(el + item))
-                $(el + item).addEvent("click", fn);
-        });
-    }
+    const baseModalOptions = Object.assign(Object.create(null), {
+        addClass: "modalDialog",
+        collapsible: false,
+        cornerRadius: 5,
+        draggable: true,
+        footerHeight: 20,
+        icon: "images/qbittorrent-tray.svg",
+        loadMethod: "xhr",
+        maximizable: false,
+        method: "post",
+        minimizable: false,
+        padding: {
+            top: 15,
+            right: 10,
+            bottom: 15,
+            left: 5
+        },
+        resizable: true,
+        width: limitWidthToViewport(480),
+        onCloseComplete: () => {
+            // make sure overlay is properly hidden upon modal closing
+            document.getElementById("modalOverlay").style.display = "none";
+        }
+    });
+
+    deepFreeze(baseModalOptions);
+
+    return exports();
+})();
+Object.freeze(window.qBittorrent.Dialog);
+
+let saveWindowSize = () => {};
+let loadWindowWidth = () => {};
+let loadWindowHeight = () => {};
+let showDownloadPage = () => {};
+let globalLimitFN = () => {};
+let uploadLimitFN = () => {};
+let shareRatioFN = () => {};
+let toggleSequentialDownloadFN = () => {};
+let toggleFirstLastPiecePrioFN = () => {};
+let setSuperSeedingFN = () => {};
+let setForceStartFN = () => {};
+let StatisticsLinkFN = () => {};
+let downloadLimitFN = () => {};
+let deleteSelectedTorrentsFN = () => {};
+let stopFN = () => {};
+let startFN = () => {};
+let autoTorrentManagementFN = () => {};
+let recheckFN = () => {};
+let reannounceFN = () => {};
+let setLocationFN = () => {};
+let renameFN = () => {};
+let renameFilesFN = () => {};
+let startVisibleTorrentsFN = () => {};
+let stopVisibleTorrentsFN = () => {};
+let deleteVisibleTorrentsFN = () => {};
+let torrentNewCategoryFN = () => {};
+let torrentSetCategoryFN = () => {};
+let createCategoryFN = () => {};
+let createSubcategoryFN = () => {};
+let editCategoryFN = () => {};
+let removeCategoryFN = () => {};
+let deleteUnusedCategoriesFN = () => {};
+let torrentAddTagsFN = () => {};
+let torrentSetTagsFN = () => {};
+let torrentRemoveAllTagsFN = () => {};
+let createTagFN = () => {};
+let removeTagFN = () => {};
+let deleteUnusedTagsFN = () => {};
+let deleteTrackerFN = () => {};
+let copyNameFN = () => {};
+let copyInfohashFN = (policy) => {};
+let copyMagnetLinkFN = () => {};
+let copyIdFN = () => {};
+let copyCommentFN = () => {};
+let copyContentPathFN = () => {};
+let setQueuePositionFN = () => {};
+let exportTorrentFN = () => {};
+
+const initializeWindows = () => {
+    const localPreferences = new window.qBittorrent.LocalPreferences.LocalPreferences();
+
+    saveWindowSize = (windowName, windowId = windowName) => {
+        const windowInstance = MochaUI.Windows.instances[windowId];
+        const size = windowInstance.contentWrapperEl.getSize();
+        localPreferences.set(`window_${windowName}_width`, size.x);
+        localPreferences.set(`window_${windowName}_height`, size.y);
+    };
+
+    loadWindowWidth = (windowId, defaultValue, limitToViewportWidth = true) => {
+        if (limitToViewportWidth)
+            defaultValue = window.qBittorrent.Dialog.limitWidthToViewport(defaultValue);
+        return localPreferences.get(`window_${windowId}_width`, defaultValue);
+    };
+
+    loadWindowHeight = (windowId, defaultValue, limitToViewportHeight = true) => {
+        if (limitToViewportHeight)
+            defaultValue = window.qBittorrent.Dialog.limitHeightToViewport(defaultValue);
+        return localPreferences.get(`window_${windowId}_height`, defaultValue);
+    };
+
+    const addClickEvent = (el, fn) => {
+        for (const item of ["Link", "Button"]) {
+            if (document.getElementById(el + item))
+                document.getElementById(el + item).addEventListener("click", fn);
+        }
+    };
 
     addClickEvent("download", (e) => {
-        new Event(e).stop();
+        e.preventDefault();
+        e.stopPropagation();
         showDownloadPage();
     });
 
-    showDownloadPage = function(urls) {
+    showDownloadPage = (urls) => {
         const id = "downloadPage";
-        const contentUri = new URI("download.html");
+        const contentURL = new URL("download.html", window.location);
 
-        if (urls && (urls.length > 0))
-            contentUri.setData("urls", urls.map(encodeURIComponent).join("|"));
+        if (urls && (urls.length > 0)) {
+            contentURL.search = new URLSearchParams({
+                v: "${CACHEID}",
+                urls: urls.map(encodeURIComponent).join("|")
+            });
+        }
 
         new MochaUI.Window({
             id: id,
-            title: "Download from URLs",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Download from URLs)QBT_TR[CONTEXT=downloadFromURL]",
             loadMethod: "iframe",
-            contentURL: contentUri.toString(),
-            addClass: "windowFrame", // fixes iframe scrolling on iOS Safari
+            contentURL: contentURL.toString(),
             scrollbars: true,
             maximizable: false,
             closable: true,
             paddingVertical: 0,
             paddingHorizontal: 0,
             width: loadWindowWidth(id, 500),
-            height: loadWindowHeight(id, 600),
-            onResize: function() {
+            height: loadWindowHeight(id, 300),
+            onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
-            }
+            })
         });
         updateMainData();
     };
 
+    addClickEvent("torrentCreator", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const id = "torrentCreatorPage";
+        new MochaUI.Window({
+            id: id,
+            icon: "images/torrent-creator.svg",
+            title: "QBT_TR(Torrent Creator)QBT_TR[CONTEXT=TorrentCreator]",
+            loadMethod: "xhr",
+            contentURL: "views/torrentcreator.html?v=${CACHEID}",
+            scrollbars: true,
+            maximizable: true,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: loadWindowWidth(id, 900),
+            height: loadWindowHeight(id, 400),
+            onResize: () => {
+                saveWindowSize(id);
+            },
+            onClose: () => {
+                window.qBittorrent.TorrentCreator.unload();
+            }
+        });
+    });
+
     addClickEvent("preferences", (e) => {
-        new Event(e).stop();
+        e.preventDefault();
+        e.stopPropagation();
+
         const id = "preferencesPage";
         new MochaUI.Window({
             id: id,
-            title: "Options",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Options)QBT_TR[CONTEXT=OptionsDialog]",
             loadMethod: "xhr",
             toolbar: true,
-            contentURL: new URI("views/preferences.html").toString(),
+            contentURL: "views/preferences.html?v=${CACHEID}",
             require: {
-                css: ["css/Tabs.css"]
+                css: ["css/Tabs.css?v=${CACHEID}"]
             },
-            toolbarURL: "views/preferencesToolbar.html",
+            toolbarURL: "views/preferencesToolbar.html?v=${CACHEID}",
             maximizable: false,
             closable: true,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: loadWindowWidth(id, 700),
+            width: loadWindowWidth(id, 730),
             height: loadWindowHeight(id, 600),
-            onResize: function() {
+            onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
-            }
+            })
         });
     });
 
-    addClickEvent("upload", (e) => {
-        new Event(e).stop();
-        const id = "uploadPage";
+    addClickEvent("manageCookies", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const id = "cookiesPage";
         new MochaUI.Window({
             id: id,
-            title: "Upload local torrent",
-            loadMethod: "iframe",
-            contentURL: new URI("upload.html").toString(),
-            addClass: "windowFrame", // fixes iframe scrolling on iOS Safari
-            scrollbars: true,
+            title: "QBT_TR(Manage Cookies)QBT_TR[CONTEXT=CookiesDialog]",
+            loadMethod: "xhr",
+            contentURL: "views/cookies.html?v=${CACHEID}",
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: loadWindowWidth(id, 500),
-            height: loadWindowHeight(id, 460),
-            onResize: function() {
+            width: loadWindowWidth(id, 900),
+            height: loadWindowHeight(id, 400),
+            onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
-            }
+            })
         });
-        updateMainData();
     });
 
-    globalUploadLimitFN = function() {
+    document.querySelector("#uploadButton #fileselectButton").addEventListener("click", function(event) {
+        // clear the value so that reselecting the same file(s) still triggers the 'change' event
+        this.value = null;
+    });
+
+    // make the entire anchor tag trigger the input, despite the input's label not spanning the entire anchor
+    document.getElementById("uploadLink").addEventListener("click", (e) => {
+        const fileSelector = document.getElementById("fileselectLink");
+        // clear the value so that reselecting the same file(s) still triggers the 'change' event
+        if (e.target === fileSelector) {
+            e.target.value = null;
+        }
+        else {
+            e.preventDefault();
+            fileSelector.click();
+        }
+    });
+
+    for (const element of document.querySelectorAll("#uploadButton #fileselectButton, #uploadLink #fileselectLink")) {
+        element.addEventListener("change", (event) => {
+            if (element.files.length === 0)
+                return;
+
+            window.qBittorrent.Client.uploadTorrentFiles(element.files);
+        });
+    }
+
+    globalLimitFN = () => {
+        new MochaUI.Window({
+            id: "globalSpeedLimitsPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Global Speed Limits)QBT_TR[CONTEXT=MainWindow]",
+            loadMethod: "xhr",
+            contentURL: "views/globalspeedlimits.html?v=${CACHEID}",
+            scrollbars: false,
+            resizable: false,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(480),
+            height: 245
+        });
+    };
+
+    uploadLimitFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length <= 0)
+            return;
+
+        const contentURL = new URL("speedlimit.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            hashes: hashes.join("|"),
+            type: "upload",
+        });
         new MochaUI.Window({
             id: "uploadLimitPage",
-            title: "Global Upload Speed Limit",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Torrent Upload Speed Limiting)QBT_TR[CONTEXT=TransferListWidget]",
             loadMethod: "iframe",
-            contentURL: new URI("uploadlimit.html").setData("hashes", "global").toString(),
+            contentURL: contentURL.toString(),
             scrollbars: false,
             resizable: false,
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: 424,
-            height: 80
+            width: window.qBittorrent.Dialog.limitWidthToViewport(424),
+            height: 100
         });
     };
 
-    uploadLimitFN = function() {
+    shareRatioFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "uploadLimitPage",
-                title: "Torrent Upload Speed Limiting",
-                loadMethod: "iframe",
-                contentURL: new URI("uploadlimit.html").setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: false,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 424,
-                height: 80
-            });
-        }
-    };
+        if (hashes.length <= 0)
+            return;
 
-    shareRatioFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            let shareRatio = null;
-            let torrentsHaveSameShareRatio = true;
+        let shareRatio = null;
+        let torrentsHaveSameShareRatio = true;
 
-            // check if all selected torrents have same share ratio
-            for (let i = 0; i < hashes.length; ++i) {
-                const hash = hashes[i];
-                const row = torrentsTable.rows[hash].full_data;
-                const origValues = row.ratio_limit + "|" + row.seeding_time_limit + "|" + row.inactive_seeding_time_limit + "|"
-                    + row.max_ratio + "|" + row.max_seeding_time + "|" + row.max_inactive_seeding_time;
+        // check if all selected torrents have same share ratio
+        for (const hash of hashes) {
+            const row = torrentsTable.getRow(hash).full_data;
+            const origValues = `${row.ratio_limit}|${row.seeding_time_limit}|${row.inactive_seeding_time_limit}|${row.max_ratio}`
+                + `|${row.max_seeding_time}|${row.max_inactive_seeding_time}|${row.share_limit_action}`;
 
-                // initialize value
-                if (shareRatio === null)
-                    shareRatio = origValues;
+            // initialize value
+            if (shareRatio === null)
+                shareRatio = origValues;
 
-                if (origValues !== shareRatio) {
-                    torrentsHaveSameShareRatio = false;
-                    break;
-                }
+            if (origValues !== shareRatio) {
+                torrentsHaveSameShareRatio = false;
+                break;
             }
+        }
 
+        const contentURL = new URL("shareratio.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            hashes: hashes.join("|"),
             // if all torrents have same share ratio, display that share ratio. else use the default
-            const orig = torrentsHaveSameShareRatio ? shareRatio : "";
-            new MochaUI.Window({
-                id: "shareRatioPage",
-                title: "Torrent Upload/Download Ratio Limiting",
-                loadMethod: "iframe",
-                contentURL: new URI("shareratio.html").setData("hashes", hashes.join("|")).setData("orig", orig).toString(),
-                scrollbars: false,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 424,
-                height: 200
-            });
-        }
-    };
-
-    toggleSequentialDownloadFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/toggleSequentialDownload",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    toggleFirstLastPiecePrioFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/toggleFirstLastPiecePrio",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    setSuperSeedingFN = function(val) {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/setSuperSeeding",
-                method: "post",
-                data: {
-                    value: val,
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    setForceStartFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/setForceStart",
-                method: "post",
-                data: {
-                    value: "true",
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    globalDownloadLimitFN = function() {
+            orig: torrentsHaveSameShareRatio ? shareRatio : ""
+        });
         new MochaUI.Window({
-            id: "downloadLimitPage",
-            title: "Global Download Speed Limit",
+            id: "shareRatioPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Torrent Upload/Download Ratio Limiting)QBT_TR[CONTEXT=UpDownRatioDialog]",
             loadMethod: "iframe",
-            contentURL: new URI("downloadlimit.html").setData("hashes", "global").toString(),
+            contentURL: contentURL.toString(),
             scrollbars: false,
-            resizable: false,
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: 424,
-            height: 80
+            width: window.qBittorrent.Dialog.limitWidthToViewport(500),
+            height: 250
         });
     };
 
-    StatisticsLinkFN = function() {
+    toggleSequentialDownloadFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/toggleSequentialDownload", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|")
+                })
+            });
+            updateMainData();
+        }
+    };
+
+    toggleFirstLastPiecePrioFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/toggleFirstLastPiecePrio", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|")
+                })
+            });
+            updateMainData();
+        }
+    };
+
+    setSuperSeedingFN = (val) => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/setSuperSeeding", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|"),
+                    value: val
+                })
+            });
+            updateMainData();
+        }
+    };
+
+    setForceStartFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/setForceStart", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|"),
+                    value: "true"
+                })
+            });
+            updateMainData();
+        }
+    };
+
+    StatisticsLinkFN = () => {
         const id = "statisticspage";
         new MochaUI.Window({
             id: id,
-            title: "Statistics",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Statistics)QBT_TR[CONTEXT=StatsDialog]",
             loadMethod: "xhr",
-            contentURL: new URI("views/statistics.html").toString(),
+            contentURL: "views/statistics.html?v=${CACHEID}",
             maximizable: false,
             padding: 10,
-            width: loadWindowWidth(id, 275),
-            height: loadWindowHeight(id, 370),
-            onResize: function() {
+            width: loadWindowWidth(id, 285),
+            height: loadWindowHeight(id, 415),
+            onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
+            }),
+            onContentLoaded: () => {
+                window.qBittorrent.Statistics.render();
             }
         });
     };
 
-    downloadLimitFN = function() {
+    downloadLimitFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "downloadLimitPage",
-                title: "Torrent Download Speed Limiting",
-                loadMethod: "iframe",
-                contentURL: new URI("downloadlimit.html").setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: false,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 424,
-                height: 80
-            });
-        }
+        if (hashes.length <= 0)
+            return;
+
+        const contentURL = new URL("speedlimit.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            hashes: hashes.join("|"),
+            type: "download",
+        });
+        new MochaUI.Window({
+            id: "downloadLimitPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Torrent Download Speed Limiting)QBT_TR[CONTEXT=TransferListWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: false,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(424),
+            height: 100
+        });
     };
 
-    deleteFN = function(deleteFiles = false) {
+    deleteSelectedTorrentsFN = (forceDeleteFiles = false) => {
         const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "confirmDeletionPage",
-                title: "Remove torrent(s)",
-                loadMethod: "iframe",
-                contentURL: new URI("confirmdeletion.html").setData("hashes", hashes.join("|")).setData("deleteFiles", deleteFiles).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                padding: 10,
-                width: 424,
-                height: 160
-            });
-            updateMainData();
+        if (hashes.length > 0) {
+            if (window.qBittorrent.Cache.preferences.get().confirm_torrent_deletion) {
+                new MochaUI.Modal({
+                    ...window.qBittorrent.Dialog.baseModalOptions,
+                    id: "confirmDeletionPage",
+                    title: "QBT_TR(Remove torrent(s))QBT_TR[CONTEXT=confirmDeletionDlg]",
+                    data: {
+                        hashes: hashes,
+                        forceDeleteFiles: forceDeleteFiles
+                    },
+                    contentURL: "views/confirmdeletion.html?v=${CACHEID}",
+                    onContentLoaded: (w) => {
+                        MochaUI.resizeWindow(w, { centered: true });
+                        MochaUI.centerWindow(w);
+                    },
+                    onCloseComplete: () => {
+                        // make sure overlay is properly hidden upon modal closing
+                        document.getElementById("modalOverlay").style.display = "none";
+                    }
+                });
+            }
+            else {
+                fetch("api/v2/torrents/delete", {
+                        method: "POST",
+                        body: new URLSearchParams({
+                            hashes: hashes.join("|"),
+                            deleteFiles: forceDeleteFiles
+                        })
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            alert("QBT_TR(Unable to delete torrents.)QBT_TR[CONTEXT=HttpServer]");
+                            return;
+                        }
+
+                        torrentsTable.deselectAll();
+                        updateMainData();
+                        updatePropertiesPanel();
+                    });
+            }
         }
     };
 
     addClickEvent("delete", (e) => {
-        new Event(e).stop();
-        deleteFN();
+        e.preventDefault();
+        e.stopPropagation();
+        deleteSelectedTorrentsFN();
     });
 
-    stopFN = function() {
+    stopFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/stop",
-                method: "post",
-                data: {
+            fetch("api/v2/torrents/stop", {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: hashes.join("|")
-                }
-            }).send();
+                })
+            });
             updateMainData();
         }
     };
 
-    startFN = function() {
+    startFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/start",
-                method: "post",
-                data: {
+            fetch("api/v2/torrents/start", {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    autoTorrentManagementFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            let enable = false;
-            hashes.each((hash, index) => {
-                const row = torrentsTable.rows[hash];
-                if (!row.full_data.auto_tmm)
-                    enable = true;
+                })
             });
-            new Request({
-                url: "api/v2/torrents/setAutoManagement",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|"),
-                    enable: enable
-                }
-            }).send();
             updateMainData();
         }
     };
 
-    recheckFN = function() {
+    autoTorrentManagementFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/recheck",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|"),
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    reannounceFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/reannounce",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|"),
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    setLocationFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            const hash = hashes[0];
-            const row = torrentsTable.rows[hash];
-
-            new MochaUI.Window({
-                id: "setLocationPage",
-                title: "Set location",
-                loadMethod: "iframe",
-                contentURL: new URI("setlocation.html").setData("hashes", hashes.join("|")).setData("path", encodeURIComponent(row.full_data.save_path)).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 400,
-                height: 130
-            });
-        }
-    };
-
-    renameFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length === 1) {
-            const hash = hashes[0];
-            const row = torrentsTable.rows[hash];
-            if (row) {
-                new MochaUI.Window({
-                    id: "renamePage",
-                    title: "Rename",
-                    loadMethod: "iframe",
-                    contentURL: new URI("rename.html").setData("hash", hash).setData("name", row.full_data.name).toString(),
-                    scrollbars: false,
-                    resizable: true,
-                    maximizable: false,
-                    paddingVertical: 0,
-                    paddingHorizontal: 0,
-                    width: 400,
-                    height: 100
+        if (hashes.length > 0) {
+            const enableAutoTMM = hashes.some((hash) => !(torrentsTable.getRow(hash).full_data.auto_tmm));
+            if (enableAutoTMM) {
+                new MochaUI.Modal({
+                    ...window.qBittorrent.Dialog.baseModalOptions,
+                    id: "confirmAutoTMMDialog",
+                    title: "QBT_TR(Enable automatic torrent management)QBT_TR[CONTEXT=confirmAutoTMMDialog]",
+                    data: {
+                        hashes: hashes,
+                        enable: enableAutoTMM
+                    },
+                    contentURL: "views/confirmAutoTMM.html?v=${CACHEID}"
                 });
+            }
+            else {
+                fetch("api/v2/torrents/setAutoManagement", {
+                        method: "POST",
+                        body: new URLSearchParams({
+                            hashes: hashes.join("|"),
+                            enable: enableAutoTMM
+                        })
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            alert("QBT_TR(Unable to set Auto Torrent Management for the selected torrents.)QBT_TR[CONTEXT=HttpServer]");
+                            return;
+                        }
+
+                        updateMainData();
+                    });
             }
         }
     };
 
-    renameFilesFN = function() {
+    recheckFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length > 0) {
+            if (window.qBittorrent.Cache.preferences.get().confirm_torrent_recheck) {
+                new MochaUI.Modal({
+                    ...window.qBittorrent.Dialog.baseModalOptions,
+                    id: "confirmRecheckDialog",
+                    title: "QBT_TR(Recheck confirmation)QBT_TR[CONTEXT=confirmRecheckDialog]",
+                    data: { hashes: hashes },
+                    contentURL: "views/confirmRecheck.html?v=${CACHEID}"
+                });
+            }
+            else {
+                fetch("api/v2/torrents/recheck", {
+                        method: "POST",
+                        body: new URLSearchParams({
+                            hashes: hashes.join("|"),
+                        })
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            alert("QBT_TR(Unable to recheck torrents.)QBT_TR[CONTEXT=HttpServer]");
+                            return;
+                        }
+
+                        updateMainData();
+                    });
+            }
+        }
+    };
+
+    reannounceFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/reannounce", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|")
+                })
+            });
+            updateMainData();
+        }
+    };
+
+    setLocationFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length <= 0)
+            return;
+
+        const contentURL = new URL("setlocation.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            hashes: hashes.join("|"),
+            path: encodeURIComponent(torrentsTable.getRow(hashes[0]).full_data.save_path)
+        });
+        new MochaUI.Window({
+            id: "setLocationPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Set location)QBT_TR[CONTEXT=TransferListWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 130
+        });
+    };
+
+    renameFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length !== 1)
+            return;
+
+        const row = torrentsTable.getRow(hashes[0]);
+        if (!row)
+            return;
+
+        const contentURL = new URL("rename.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            hash: hashes[0],
+            name: row.full_data.name
+        });
+        new MochaUI.Window({
+            id: "renamePage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Rename)QBT_TR[CONTEXT=TransferListWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 100
+        });
+    };
+
+    renameFilesFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length === 1) {
             const hash = hashes[0];
-            const row = torrentsTable.rows[hash];
+            const row = torrentsTable.getRow(hash);
             if (row) {
                 new MochaUI.Window({
                     id: "multiRenamePage",
-                    title: "Renaming",
+                    icon: "images/qbittorrent-tray.svg",
+                    title: "QBT_TR(Renaming)QBT_TR[CONTEXT=TransferListWidget]",
                     data: { hash: hash, selectedRows: [] },
                     loadMethod: "xhr",
-                    contentURL: "rename_files.html",
+                    contentURL: "rename_files.html?v=${CACHEID}",
                     scrollbars: false,
                     resizable: true,
                     maximizable: false,
@@ -544,445 +751,392 @@ const initializeWindows = function() {
                     paddingHorizontal: 0,
                     width: 800,
                     height: 420,
-                    resizeLimit: { "x": [800], "y": [420] }
+                    resizeLimit: { x: [800], y: [420] }
                 });
             }
         }
     };
 
-    torrentNewCategoryFN = function() {
-        const action = "set";
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "newCategoryPage",
-                title: "New Category",
-                loadMethod: "iframe",
-                contentURL: new URI("newcategory.html").setData("action", action).setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 400,
-                height: 150
-            });
+    startVisibleTorrentsFN = () => {
+        const hashes = torrentsTable.getFilteredTorrentsHashes(selectedStatus, selectedCategory, selectedTag, selectedTracker);
+        if (hashes.length > 0) {
+            fetch("api/v2/torrents/start", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        hashes: hashes.join("|")
+                    })
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        alert("QBT_TR(Unable to start torrents.)QBT_TR[CONTEXT=HttpServer]");
+                        return;
+                    }
+
+                    updateMainData();
+                    updatePropertiesPanel();
+                });
         }
     };
 
-    torrentSetCategoryFN = function(categoryHash) {
+    stopVisibleTorrentsFN = () => {
+        const hashes = torrentsTable.getFilteredTorrentsHashes(selectedStatus, selectedCategory, selectedTag, selectedTracker);
+        if (hashes.length > 0) {
+            fetch("api/v2/torrents/stop", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        hashes: hashes.join("|")
+                    })
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        alert("QBT_TR(Unable to stop torrents.)QBT_TR[CONTEXT=HttpServer]");
+                        return;
+                    }
+
+                    updateMainData();
+                    updatePropertiesPanel();
+                });
+        }
+    };
+
+    deleteVisibleTorrentsFN = () => {
+        const hashes = torrentsTable.getFilteredTorrentsHashes(selectedStatus, selectedCategory, selectedTag, selectedTracker);
+        if (hashes.length > 0) {
+            if (window.qBittorrent.Cache.preferences.get().confirm_torrent_deletion) {
+                new MochaUI.Modal({
+                    ...window.qBittorrent.Dialog.baseModalOptions,
+                    id: "confirmDeletionPage",
+                    title: "QBT_TR(Remove torrent(s))QBT_TR[CONTEXT=confirmDeletionDlg]",
+                    data: {
+                        hashes: hashes,
+                        isDeletingVisibleTorrents: true
+                    },
+                    contentURL: "views/confirmdeletion.html?v=${CACHEID}",
+                    onContentLoaded: (w) => {
+                        MochaUI.resizeWindow(w, { centered: true });
+                        MochaUI.centerWindow(w);
+                    }
+                });
+            }
+            else {
+                fetch("api/v2/torrents/delete", {
+                        method: "POST",
+                        body: new URLSearchParams({
+                            hashes: hashes.join("|"),
+                            deleteFiles: false,
+                        })
+                    })
+                    .then((response) => {
+                        if (!response.ok) {
+                            alert("QBT_TR(Unable to delete torrents.)QBT_TR[CONTEXT=HttpServer]");
+                            return;
+                        }
+
+                        torrentsTable.deselectAll();
+                        updateMainData();
+                        updatePropertiesPanel();
+                    });
+            }
+        }
+    };
+
+    torrentNewCategoryFN = () => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length <= 0)
             return;
 
-        const categoryName = category_list.has(categoryHash)
-            ? category_list.get(categoryHash).name
-            : "";
-        new Request({
-            url: "api/v2/torrents/setCategory",
-            method: "post",
-            data: {
-                hashes: hashes.join("|"),
-                category: categoryName
-            }
-        }).send();
-    };
-
-    createCategoryFN = function() {
-        const action = "create";
+        const contentURL = new URL("newcategory.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "set",
+            hashes: hashes.join("|")
+        });
         new MochaUI.Window({
             id: "newCategoryPage",
-            title: "New Category",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(New Category)QBT_TR[CONTEXT=TransferListWidget]",
             loadMethod: "iframe",
-            contentURL: new URI("newcategory.html").setData("action", action).toString(),
+            contentURL: contentURL.toString(),
             scrollbars: false,
             resizable: true,
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: 400,
-            height: 150
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 200
         });
-        updateMainData();
     };
 
-    createSubcategoryFN = function(categoryHash) {
-        const action = "createSubcategory";
-        const categoryName = category_list.get(categoryHash).name + "/";
-        new MochaUI.Window({
-            id: "newSubcategoryPage",
-            title: "New Category",
-            loadMethod: "iframe",
-            contentURL: new URI("newcategory.html").setData("action", action).setData("categoryName", categoryName).toString(),
-            scrollbars: false,
-            resizable: true,
-            maximizable: false,
-            paddingVertical: 0,
-            paddingHorizontal: 0,
-            width: 400,
-            height: 150
-        });
-        updateMainData();
-    };
-
-    editCategoryFN = function(categoryHash) {
-        const action = "edit";
-        const category = category_list.get(categoryHash);
-        new MochaUI.Window({
-            id: "editCategoryPage",
-            title: "Edit Category",
-            loadMethod: "iframe",
-            contentURL: new URI("newcategory.html").setData("action", action).setData("categoryName", category.name).setData("savePath", category.savePath).toString(),
-            scrollbars: false,
-            resizable: true,
-            maximizable: false,
-            paddingVertical: 0,
-            paddingHorizontal: 0,
-            width: 400,
-            height: 150
-        });
-        updateMainData();
-    };
-
-    removeCategoryFN = function(categoryHash) {
-        const categoryName = category_list.get(categoryHash).name;
-        new Request({
-            url: "api/v2/torrents/removeCategories",
-            method: "post",
-            data: {
-                categories: categoryName
-            }
-        }).send();
-        setCategoryFilter(CATEGORIES_ALL);
-    };
-
-    deleteUnusedCategoriesFN = function() {
-        const categories = [];
-        category_list.forEach((category, hash) => {
-            if (torrentsTable.getFilteredTorrentsNumber("all", hash, TAGS_ALL, TRACKERS_ALL) === 0)
-                categories.push(category.name);
-        });
-
-        new Request({
-            url: "api/v2/torrents/removeCategories",
-            method: "post",
-            data: {
-                categories: categories.join("\n")
-            }
-        }).send();
-        setCategoryFilter(CATEGORIES_ALL);
-    };
-
-    startTorrentsByCategoryFN = function(categoryHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", categoryHash, TAGS_ALL, TRACKERS_ALL);
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/start",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    stopTorrentsByCategoryFN = function(categoryHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", categoryHash, TAGS_ALL, TRACKERS_ALL);
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/stop",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    deleteTorrentsByCategoryFN = function(categoryHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", categoryHash, TAGS_ALL, TRACKERS_ALL);
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "confirmDeletionPage",
-                title: "Remove torrent(s)",
-                loadMethod: "iframe",
-                contentURL: new URI("confirmdeletion.html").setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                padding: 10,
-                width: 424,
-                height: 160
-            });
-            updateMainData();
-        }
-    };
-
-    torrentAddTagsFN = function() {
-        const action = "set";
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "newTagPage",
-                title: "Add Tags",
-                loadMethod: "iframe",
-                contentURL: new URI("newtag.html").setData("action", action).setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                paddingVertical: 0,
-                paddingHorizontal: 0,
-                width: 250,
-                height: 100
-            });
-        }
-    };
-
-    torrentSetTagsFN = function(tagHash, isSet) {
+    torrentSetCategoryFN = (category) => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length <= 0)
             return;
 
-        const tagName = tagList.has(tagHash) ? tagList.get(tagHash).name : "";
-        new Request({
-            url: (isSet ? "api/v2/torrents/addTags" : "api/v2/torrents/removeTags"),
-            method: "post",
-            data: {
-                hashes: hashes.join("|"),
-                tags: tagName,
-            }
-        }).send();
-    };
-
-    torrentRemoveAllTagsFN = function() {
-        const hashes = torrentsTable.selectedRowsIds();
-        if (hashes.length) {
-            new Request({
-                url: ("api/v2/torrents/removeTags"),
-                method: "post",
-                data: {
+        fetch("api/v2/torrents/setCategory", {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: hashes.join("|"),
-                }
-            }).send();
-        }
+                    category: category
+                })
+            })
+            .then((response) => {
+                if (!response.ok)
+                    return;
+
+                updateMainData();
+            });
     };
 
-    createTagFN = function() {
-        const action = "create";
+    createCategoryFN = () => {
+        const contentURL = new URL("newcategory.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "create"
+        });
         new MochaUI.Window({
-            id: "newTagPage",
-            title: "New Tag",
+            id: "newCategoryPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(New Category)QBT_TR[CONTEXT=CategoryFilterWidget]",
             loadMethod: "iframe",
-            contentURL: new URI("newtag.html").setData("action", action).toString(),
+            contentURL: contentURL.toString(),
             scrollbars: false,
             resizable: true,
             maximizable: false,
             paddingVertical: 0,
             paddingHorizontal: 0,
-            width: 250,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 200
+        });
+    };
+
+    createSubcategoryFN = (category) => {
+        const contentURL = new URL("newcategory.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "createSubcategory",
+            categoryName: `${category}/`
+        });
+        new MochaUI.Window({
+            id: "newSubcategoryPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(New Category)QBT_TR[CONTEXT=CategoryFilterWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 200
+        });
+    };
+
+    editCategoryFN = (category) => {
+        const contentURL = new URL("newcategory.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "edit",
+            categoryName: category
+        });
+        new MochaUI.Window({
+            id: "editCategoryPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Edit Category)QBT_TR[CONTEXT=TransferListWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(400),
+            height: 200
+        });
+    };
+
+    removeCategoryFN = (category) => {
+        fetch("api/v2/torrents/removeCategories", {
+                method: "POST",
+                body: new URLSearchParams({
+                    categories: category
+                })
+            })
+            .then((response) => {
+                if (!response.ok)
+                    return;
+
+                window.qBittorrent.Filters.clearCategoryFilter();
+                updateMainData();
+            });
+    };
+
+    deleteUnusedCategoriesFN = () => {
+        const categories = [];
+        for (const category of window.qBittorrent.Client.categoryMap.keys()) {
+            if (torrentsTable.getFilteredTorrentsNumber("all", category, TAGS_ALL, TRACKERS_ALL) === 0)
+                categories.push(category);
+        }
+        fetch("api/v2/torrents/removeCategories", {
+                method: "POST",
+                body: new URLSearchParams({
+                    categories: categories.join("\n")
+                })
+            })
+            .then((response) => {
+                if (!response.ok)
+                    return;
+
+                window.qBittorrent.Filters.clearCategoryFilter();
+                updateMainData();
+            });
+    };
+
+    torrentAddTagsFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length <= 0)
+            return;
+
+        const contentURL = new URL("newtag.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "set",
+            hashes: hashes.join("|")
+        });
+        new MochaUI.Window({
+            id: "newTagPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(Add tags)QBT_TR[CONTEXT=TransferListWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(250),
+            height: 100
+        });
+    };
+
+    torrentSetTagsFN = (tag, isSet) => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length <= 0)
+            return;
+
+        fetch((isSet ? "api/v2/torrents/addTags" : "api/v2/torrents/removeTags"), {
+            method: "POST",
+            body: new URLSearchParams({
+                hashes: hashes.join("|"),
+                tags: tag
+            })
+        });
+    };
+
+    torrentRemoveAllTagsFN = () => {
+        const hashes = torrentsTable.selectedRowsIds();
+        if (hashes.length) {
+            fetch("api/v2/torrents/removeTags", {
+                method: "POST",
+                body: new URLSearchParams({
+                    hashes: hashes.join("|")
+                })
+            });
+        }
+    };
+
+    createTagFN = () => {
+        const contentURL = new URL("newtag.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            action: "create"
+        });
+        new MochaUI.Window({
+            id: "newTagPage",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(New Tag)QBT_TR[CONTEXT=TagFilterWidget]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            paddingVertical: 0,
+            paddingHorizontal: 0,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(250),
             height: 100
         });
         updateMainData();
     };
 
-    removeTagFN = function(tagHash) {
-        const tagName = tagList.get(tagHash).name;
-        new Request({
-            url: "api/v2/torrents/deleteTags",
-            method: "post",
-            data: {
-                tags: tagName
-            }
-        }).send();
-        setTagFilter(TAGS_ALL);
-    };
-
-    deleteUnusedTagsFN = function() {
-        const tags = [];
-        tagList.forEach((tag, hash) => {
-            if (torrentsTable.getFilteredTorrentsNumber("all", CATEGORIES_ALL, hash, TRACKERS_ALL) === 0)
-                tags.push(tag.name);
+    removeTagFN = (tag) => {
+        fetch("api/v2/torrents/deleteTags", {
+            method: "POST",
+            body: new URLSearchParams({
+                tags: tag
+            })
         });
-        new Request({
-            url: "api/v2/torrents/deleteTags",
-            method: "post",
-            data: {
+        window.qBittorrent.Filters.clearTagFilter();
+    };
+
+    deleteUnusedTagsFN = () => {
+        const tags = [];
+        for (const tag of window.qBittorrent.Client.tagMap.keys()) {
+            if (torrentsTable.getFilteredTorrentsNumber("all", CATEGORIES_ALL, tag, TRACKERS_ALL) === 0)
+                tags.push(tag);
+        }
+        fetch("api/v2/torrents/deleteTags", {
+            method: "POST",
+            body: new URLSearchParams({
                 tags: tags.join(",")
+            })
+        });
+        window.qBittorrent.Filters.clearTagFilter();
+    };
+
+    deleteTrackerFN = (trackerHost) => {
+        if ((trackerHost === TRACKERS_ALL)
+            || (trackerHost === TRACKERS_ANNOUNCE_ERROR)
+            || (trackerHost === TRACKERS_ERROR)
+            || (trackerHost === TRACKERS_TRACKERLESS)
+            || (trackerHost === TRACKERS_WARNING))
+            return;
+
+        const contentURL = new URL("confirmtrackerdeletion.html", window.location);
+        contentURL.search = new URLSearchParams({
+            v: "${CACHEID}",
+            host: trackerHost,
+            urls: [...trackerMap.get(trackerHost).keys()].map(encodeURIComponent).join("|")
+        });
+        new MochaUI.Window({
+            id: "confirmDeletionPage",
+            title: "QBT_TR(Remove tracker)QBT_TR[CONTEXT=confirmDeletionDlg]",
+            loadMethod: "iframe",
+            contentURL: contentURL.toString(),
+            scrollbars: false,
+            resizable: true,
+            maximizable: false,
+            padding: 10,
+            width: window.qBittorrent.Dialog.limitWidthToViewport(424),
+            height: 100,
+            onCloseComplete: () => {
+                updateMainData();
+                window.qBittorrent.Filters.clearTrackerFilter();
             }
-        }).send();
-        setTagFilter(TAGS_ALL);
+        });
     };
 
-    startTorrentsByTagFN = function(tagHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, tagHash, TRACKERS_ALL);
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/start",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    stopTorrentsByTagFN = function(tagHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, tagHash, TRACKERS_ALL);
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/stop",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    deleteTorrentsByTagFN = function(tagHash) {
-        const hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, tagHash, TRACKERS_ALL);
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "confirmDeletionPage",
-                title: "Remove torrent(s)",
-                loadMethod: "iframe",
-                contentURL: new URI("confirmdeletion.html").setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                padding: 10,
-                width: 424,
-                height: 160
-            });
-            updateMainData();
-        }
-    };
-
-    startTorrentsByTrackerFN = function(trackerHash) {
-        const trackerHashInt = Number.parseInt(trackerHash, 10);
-        let hashes = [];
-        switch (trackerHashInt) {
-            case TRACKERS_ALL:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_ALL);
-                break;
-            case TRACKERS_TRACKERLESS:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_TRACKERLESS);
-                break;
-            default: {
-                const uniqueTorrents = new Set();
-                for (const torrents of trackerList.get(trackerHashInt).trackerTorrentMap.values()) {
-                    for (const torrent of torrents)
-                        uniqueTorrents.add(torrent);
-                }
-                hashes = [...uniqueTorrents];
-                break;
-            }
-        }
-
-        if (hashes.length > 0) {
-            new Request({
-                url: "api/v2/torrents/start",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    stopTorrentsByTrackerFN = function(trackerHash) {
-        const trackerHashInt = Number.parseInt(trackerHash, 10);
-        let hashes = [];
-        switch (trackerHashInt) {
-            case TRACKERS_ALL:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_ALL);
-                break;
-            case TRACKERS_TRACKERLESS:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_TRACKERLESS);
-                break;
-            default: {
-                const uniqueTorrents = new Set();
-                for (const torrents of trackerList.get(trackerHashInt).trackerTorrentMap.values()) {
-                    for (const torrent of torrents)
-                        uniqueTorrents.add(torrent);
-                }
-                hashes = [...uniqueTorrents];
-                break;
-            }
-        }
-
-        if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/stop",
-                method: "post",
-                data: {
-                    hashes: hashes.join("|")
-                }
-            }).send();
-            updateMainData();
-        }
-    };
-
-    deleteTorrentsByTrackerFN = function(trackerHash) {
-        const trackerHashInt = Number.parseInt(trackerHash, 10);
-        let hashes = [];
-        switch (trackerHashInt) {
-            case TRACKERS_ALL:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_ALL);
-                break;
-            case TRACKERS_TRACKERLESS:
-                hashes = torrentsTable.getFilteredTorrentsHashes("all", CATEGORIES_ALL, TAGS_ALL, TRACKERS_TRACKERLESS);
-                break;
-            default: {
-                const uniqueTorrents = new Set();
-                for (const torrents of trackerList.get(trackerHashInt).trackerTorrentMap.values()) {
-                    for (const torrent of torrents)
-                        uniqueTorrents.add(torrent);
-                }
-                hashes = [...uniqueTorrents];
-                break;
-            }
-        }
-
-        if (hashes.length) {
-            new MochaUI.Window({
-                id: "confirmDeletionPage",
-                title: "Remove torrent(s)",
-                loadMethod: "iframe",
-                contentURL: new URI("confirmdeletion.html").setData("hashes", hashes.join("|")).toString(),
-                scrollbars: false,
-                resizable: true,
-                maximizable: false,
-                padding: 10,
-                width: 424,
-                height: 160,
-                onCloseComplete: function() {
-                    updateMainData();
-                    setTrackerFilter(TRACKERS_ALL);
-                }
-            });
-        }
-    };
-
-    copyNameFN = function() {
+    copyNameFN = () => {
         const selectedRows = torrentsTable.selectedRowsIds();
         const names = [];
         if (selectedRows.length > 0) {
             const rows = torrentsTable.getFilteredAndSortedRows();
-            for (let i = 0; i < selectedRows.length; ++i) {
-                const hash = selectedRows[i];
+            for (const hash of selectedRows)
                 names.push(rows[hash].full_data.name);
-            }
         }
         return names.join("\n");
     };
 
-    copyInfohashFN = function(policy) {
+    copyInfohashFN = (policy) => {
         const selectedRows = torrentsTable.selectedRowsIds();
         const infohashes = [];
         if (selectedRows.length > 0) {
@@ -1007,30 +1161,27 @@ const initializeWindows = function() {
         return infohashes.join("\n");
     };
 
-    copyMagnetLinkFN = function() {
+    copyMagnetLinkFN = () => {
         const selectedRows = torrentsTable.selectedRowsIds();
         const magnets = [];
         if (selectedRows.length > 0) {
             const rows = torrentsTable.getFilteredAndSortedRows();
-            for (let i = 0; i < selectedRows.length; ++i) {
-                const hash = selectedRows[i];
+            for (const hash of selectedRows)
                 magnets.push(rows[hash].full_data.magnet_uri);
-            }
         }
         return magnets.join("\n");
     };
 
-    copyIdFN = function() {
+    copyIdFN = () => {
         return torrentsTable.selectedRowsIds().join("\n");
     };
 
-    copyCommentFN = function() {
+    copyCommentFN = () => {
         const selectedRows = torrentsTable.selectedRowsIds();
         const comments = [];
         if (selectedRows.length > 0) {
             const rows = torrentsTable.getFilteredAndSortedRows();
-            for (let i = 0; i < selectedRows.length; ++i) {
-                const hash = selectedRows[i];
+            for (const hash of selectedRows) {
                 const comment = rows[hash].full_data.comment;
                 if (comment && (comment !== ""))
                     comments.push(comment);
@@ -1039,24 +1190,35 @@ const initializeWindows = function() {
         return comments.join("\n---------\n");
     };
 
-    exportTorrentFN = async function() {
+    copyContentPathFN = () => {
+        const selectedRows = torrentsTable.selectedRowsIds();
+        const contentPaths = [];
+        if (selectedRows.length > 0) {
+            const rows = torrentsTable.getFilteredAndSortedRows();
+            for (const hash of selectedRows) {
+                const contentPath = rows[hash].full_data.content_path;
+                if ((contentPath !== null) && (contentPath.length > 0))
+                    contentPaths.push(contentPath);
+            }
+        }
+        return contentPaths.join("\n");
+    };
+
+    exportTorrentFN = async () => {
         const hashes = torrentsTable.selectedRowsIds();
         for (const hash of hashes) {
-            const row = torrentsTable.rows.get(hash);
+            const row = torrentsTable.getRow(hash);
             if (!row)
                 continue;
 
             const name = row.full_data.name;
-            const url = new URI("api/v2/torrents/export");
-            url.setData("hash", hash);
+            const url = new URL("api/v2/torrents/export", window.location);
+            url.search = new URLSearchParams({
+                hash: hash
+            });
 
             // download response to file
-            const element = document.createElement("a");
-            element.setAttribute("href", url);
-            element.setAttribute("download", (name + ".torrent"));
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
+            await window.qBittorrent.Misc.downloadFile(url, `${name}.torrent`, "QBT_TR(Unable to export torrent file)QBT_TR[CONTEXT=MainWindow]");
 
             // https://stackoverflow.com/questions/53560991/automatic-file-downloads-limited-to-10-files-on-chrome-browser
             await window.qBittorrent.Misc.sleep(200);
@@ -1064,129 +1226,162 @@ const initializeWindows = function() {
     };
 
     addClickEvent("stopAll", (e) => {
-        new Event(e).stop();
+        e.preventDefault();
+        e.stopPropagation();
 
-        if (confirm("Would you like to stop all torrents?")) {
-            new Request({
-                url: "api/v2/torrents/stop",
-                method: "post",
-                data: {
+        if (confirm("QBT_TR(Would you like to stop all torrents?)QBT_TR[CONTEXT=MainWindow]")) {
+            fetch("api/v2/torrents/stop", {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: "all"
-                }
-            }).send();
+                })
+            });
             updateMainData();
         }
     });
 
     addClickEvent("startAll", (e) => {
-        new Event(e).stop();
+        e.preventDefault();
+        e.stopPropagation();
 
-        if (confirm("Would you like to start all torrents?")) {
-            new Request({
-                url: "api/v2/torrents/start",
-                method: "post",
-                data: {
+        if (confirm("QBT_TR(Would you like to start all torrents?)QBT_TR[CONTEXT=MainWindow]")) {
+            fetch("api/v2/torrents/start", {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: "all"
-                }
-            }).send();
+                })
+            });
             updateMainData();
         }
     });
 
-    ["stop", "start", "recheck"].each((item) => {
+    addClickEvent("selectAll", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        torrentsTable.selectAll();
+    });
+
+    addClickEvent("invertSelection", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        torrentsTable.selectInverse();
+    });
+
+    for (const item of ["stop", "start", "recheck"]) {
         addClickEvent(item, (e) => {
-            new Event(e).stop();
+            e.preventDefault();
+            e.stopPropagation();
+
             const hashes = torrentsTable.selectedRowsIds();
-            if (hashes.length) {
-                hashes.each((hash, index) => {
-                    new Request({
-                        url: "api/v2/torrents/" + item,
-                        method: "post",
-                        data: {
+            if (hashes.length > 0) {
+                for (const hash of hashes) {
+                    fetch(`api/v2/torrents/${item}`, {
+                        method: "POST",
+                        body: new URLSearchParams({
                             hashes: hash
-                        }
-                    }).send();
-                });
+                        })
+                    });
+                }
                 updateMainData();
             }
         });
-    });
+    }
 
-    ["decreasePrio", "increasePrio", "topPrio", "bottomPrio"].each((item) => {
+    for (const item of ["decreasePrio", "increasePrio", "topPrio", "bottomPrio"]) {
         addClickEvent(item, (e) => {
-            new Event(e).stop();
+            e.preventDefault();
+            e.stopPropagation();
             setQueuePositionFN(item);
         });
-    });
+    }
 
-    setQueuePositionFN = function(cmd) {
+    setQueuePositionFN = (cmd) => {
         const hashes = torrentsTable.selectedRowsIds();
         if (hashes.length) {
-            new Request({
-                url: "api/v2/torrents/" + cmd,
-                method: "post",
-                data: {
+            fetch(`api/v2/torrents/${cmd}`, {
+                method: "POST",
+                body: new URLSearchParams({
                     hashes: hashes.join("|")
-                }
-            }).send();
+                })
+            });
             updateMainData();
         }
     };
 
     addClickEvent("about", (e) => {
-        new Event(e).stop();
+        e.preventDefault();
+        e.stopPropagation();
+
         const id = "aboutpage";
         new MochaUI.Window({
             id: id,
-            title: "About qBittorrent",
+            icon: "images/qbittorrent-tray.svg",
+            title: "QBT_TR(About qBittorrent)QBT_TR[CONTEXT=AboutDialog]",
             loadMethod: "xhr",
-            contentURL: new URI("views/about.html").toString(),
+            contentURL: "views/about.html?v=${CACHEID}",
             require: {
-                css: ["css/Tabs.css"]
+                css: ["css/Tabs.css?v=${CACHEID}"]
             },
             toolbar: true,
-            toolbarURL: "views/aboutToolbar.html",
+            toolbarURL: "views/aboutToolbar.html?v=${CACHEID}",
             padding: 10,
-            width: loadWindowWidth(id, 550),
+            width: loadWindowWidth(id, 570),
             height: loadWindowHeight(id, 360),
-            onResize: function() {
+            onResize: window.qBittorrent.Misc.createDebounceHandler(500, (e) => {
                 saveWindowSize(id);
-            }
+            })
         });
     });
 
     addClickEvent("logout", (e) => {
-        new Event(e).stop();
-        new Request({
-            url: "api/v2/auth/logout",
-            method: "post",
-            onSuccess: function() {
+        e.preventDefault();
+        e.stopPropagation();
+
+        fetch("api/v2/auth/logout", {
+                method: "POST"
+            })
+            .then((response) => {
+                if (!response.ok)
+                    return;
+
                 window.location.reload(true);
-            }
-        }).send();
+            });
     });
 
     addClickEvent("shutdown", (e) => {
-        new Event(e).stop();
-        if (confirm("Are you sure you want to quit qBittorrent?")) {
-            new Request({
-                url: "api/v2/app/shutdown",
-                method: "post",
-                onSuccess: function() {
-                    const shutdownMessage = "%1 has been shutdown".replace("%1", window.qBittorrent.Client.mainTitle());
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (confirm("QBT_TR(Are you sure you want to quit qBittorrent?)QBT_TR[CONTEXT=MainWindow]")) {
+            fetch("api/v2/app/shutdown", {
+                    method: "POST"
+                })
+                .then((response) => {
+                    if (!response.ok)
+                        return;
+
+                    const shutdownMessage = "QBT_TR(%1 has been shutdown)QBT_TR[CONTEXT=HttpServer]".replace("%1", window.qBittorrent.Client.mainTitle());
                     document.write(`<!doctype html><html lang="${LANG}"><head> <meta charset="UTF-8"> <meta name="color-scheme" content="light dark"> <title>${shutdownMessage}</title> <style>* {font-family: Arial, Helvetica, sans-serif;}</style></head><body> <h1 style="text-align: center;">${shutdownMessage}</h1></body></html>`);
                     document.close();
                     window.stop();
                     window.qBittorrent.Client.stop();
-                }
-            }).send();
+                });
         }
     });
 
     // Deactivate menu header links
-    $$("a.returnFalse").each((el) => {
-        el.addEvent("click", (e) => {
-            new Event(e).stop();
+    for (const el of document.querySelectorAll("a.returnFalse")) {
+        el.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
         });
-    });
+    }
+
+    const userAgent = (navigator.userAgentData?.platform ?? navigator.platform).toLowerCase();
+    if (userAgent.includes("ipad") || userAgent.includes("iphone") || (userAgent.includes("mac") && (navigator.maxTouchPoints > 1))) {
+        for (const element of document.getElementsByClassName("fileselect"))
+            element.accept = ".torrent";
+    }
 };

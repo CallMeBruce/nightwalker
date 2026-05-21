@@ -1,6 +1,7 @@
 /*
  * Bittorrent Client using Qt and libtorrent.
- * Copyright (C) 2019  Thomas Piccirello <thomas.piccirello@gmail.com>
+ * Copyright (C) 2025  Mike Tzou (Chocobo1)
+ * Copyright (C) 2019  Thomas Piccirello <thomas@piccirello.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,34 +29,37 @@
 
 "use strict";
 
-if (window.qBittorrent === undefined)
-    window.qBittorrent = {};
-
-window.qBittorrent.LocalPreferences = (function() {
-    const exports = function() {
+window.qBittorrent ??= {};
+window.qBittorrent.LocalPreferences ??= (() => {
+    const exports = () => {
         return {
-            LocalPreferencesClass: LocalPreferencesClass
+            LocalPreferences: LocalPreferences,
+            upgrade: upgrade
         };
     };
 
-    const LocalPreferencesClass = new Class({
-        get: function(key, defaultValue) {
+    class LocalPreferences {
+        get(key, defaultValue) {
             const value = localStorage.getItem(key);
             return ((value === null) && (defaultValue !== undefined))
                 ? defaultValue
                 : value;
-        },
+        }
 
-        set: function(key, value) {
+        set(key, value) {
             try {
                 localStorage.setItem(key, value);
             }
             catch (err) {
                 console.error(err);
             }
-        },
+        }
 
-        remove: function(key) {
+        size() {
+            return localStorage.length;
+        }
+
+        remove(key) {
             try {
                 localStorage.removeItem(key);
             }
@@ -63,9 +67,42 @@ window.qBittorrent.LocalPreferences = (function() {
                 console.error(err);
             }
         }
-    });
+    }
+
+    const localPreferences = new LocalPreferences();
+
+    const upgrade = () => {
+        const MIGRATION_VERSION = 1;
+        const MIGRATION_VERSION_KEY = "MigrationVersion";
+
+        // clean start
+        if (localPreferences.size() === 0) {
+            localPreferences.set(MIGRATION_VERSION_KEY, MIGRATION_VERSION);
+            return;
+        }
+
+        // already in use
+        const version = Number(localPreferences.get(MIGRATION_VERSION_KEY)); // `0` on first initialization
+        if (version !== MIGRATION_VERSION) {
+            if (version < 1)
+                resetSideFilters();
+
+            localPreferences.set(MIGRATION_VERSION_KEY, MIGRATION_VERSION);
+        }
+    };
+
+    const resetSideFilters = () => {
+        // conditionally reset the filter to default to avoid none selected
+        const clear = (key) => {
+            const value = Number(localPreferences.get(key));
+            if ((value === 1) || (value === 2)) // affected values
+                localPreferences.remove(key);
+        };
+        clear("selected_category");
+        clear("selected_tag");
+        clear("selected_tracker");
+    };
 
     return exports();
 })();
-
 Object.freeze(window.qBittorrent.LocalPreferences);
