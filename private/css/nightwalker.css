@@ -1081,6 +1081,16 @@ fieldset {
 .mocha {
   background-color: var(--color-Grey) !important;
 }
+
+.mocha .handle {
+  height: 5px;
+}
+
+.mocha .handle:hover {
+  background-color: var(--color-GreySelected) !important;
+  opacity: 1;
+}
+
 .mochaCanvas {
   display: none !important;
 }
