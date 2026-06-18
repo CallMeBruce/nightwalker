@@ -41,6 +41,7 @@ window.qBittorrent.MonkeyPatch ??= (() => {
         patchMootoolsDocumentId();
         patchMochaGetAsset();
         patchMochaWindowOptions();
+        patchMochaCrossOriginIFrame();
     };
 
     const patchMootoolsDocumentId = () => {
@@ -133,6 +134,29 @@ window.qBittorrent.MonkeyPatch ??= (() => {
         options.shadowOffset = { x: 0, y: 0 };
         options.useCanvas = false;
         options.useCanvasControls = false;
+    };
+
+    /**
+     * Fix broken init when embedded in cross-origin iframe
+     */
+    const patchMochaCrossOriginIFrame = () => {
+        MUI.originalUnderlayInitialize = MUI.underlayInitialize;
+        MUI.originalSetUnderlaySize = MUI.setUnderlaySize;
+
+        MUI.underlayInitialize = function() {
+            var windowUnderlay = new Element('div', {
+                'id': 'windowUnderlay',
+                'styles': {
+                    'height': window.getCoordinates().height,
+                    'opacity': .01,
+                    'display': 'none'
+                }
+            }).inject(document.body);
+        };
+
+        MUI.setUnderlaySize = function() {
+            $('windowUnderlay').setStyle('height', window.getCoordinates().height);
+        };
     };
 
     return exports();
